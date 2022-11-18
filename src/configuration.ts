@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as cp from 'child_process';
 import * as path from 'path';
 import { Rubocop } from './rubocop';
+import { log } from './channel';
 
 export interface RubocopConfig {
   command: string;
@@ -15,12 +16,17 @@ export interface RubocopConfig {
 }
 
 const detectBundledRubocop: () => boolean = () => {
+  let found: boolean;
   try {
+    log("detectBundledRubocop: bundle show rubocop");
     cp.execSync('bundle show rubocop', { cwd: vs.workspace.rootPath });
-    return true;
+    found = true;
   } catch (e) {
-    return false;
+    found = false;
   }
+
+  log(`detectBundledRubocop: ${found}`);
+  return found;
 };
 
 const autodetectExecutePath: (cmd: string) => string = (cmd) => {

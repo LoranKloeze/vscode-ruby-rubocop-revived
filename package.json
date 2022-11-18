@@ -53,6 +53,11 @@
         "command": "ruby.rubocop.autocorrect",
         "when": "editorLangId == 'ruby' || editorLangId == 'gemfile'",
         "title": "Ruby: Autocorrect by Rubocop"
+      },
+      {
+        "command": "ruby.rubocop.showOutputChannel",
+        "when": "editorLangId == 'ruby' || editorLangId == 'gemfile'",
+        "title": "Ruby: Show Rubocop Output Channel"
       }
     ],
     "keybindings": [

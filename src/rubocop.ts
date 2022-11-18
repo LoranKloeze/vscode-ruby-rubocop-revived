@@ -10,6 +10,7 @@ import { getConfig, RubocopConfig } from './configuration';
 import RubocopAutocorrectProvider from './rubocopAutocorrectProvider';
 import { getCommandArguments, isFileUri, getCurrentPath } from './helper';
 import RubocopQuickFixProvider from './rubocopQuickFixProvider';
+import { log } from './channel';
 
 export class Rubocop {
   public config: RubocopConfig;
@@ -38,7 +39,7 @@ ${copName}:
 
     const rubocopYamlPath = path.join(workspaceFolder.uri.fsPath, '.rubocop.yml')
     fs.appendFile(rubocopYamlPath, disableCopContent, () => {
-      if(onComplete) onComplete();
+      if (onComplete) onComplete();
     });
   }
 
@@ -68,7 +69,7 @@ ${copName}:
       }
     });
 
-    if(onComplete) promise.then(() => onComplete());
+    if (onComplete) promise.then(() => onComplete());
 
     return true;
   }
@@ -180,12 +181,17 @@ ${copName}:
     options: cp.ExecOptions,
     cb: (err: Error, stdout: string, stderr: string) => void
   ): cp.ChildProcess {
+    const cmd = `${this.config.command} ${args.join(' ')}`;
+    log(`executeRubocop: ${cmd}`);
+
     let child;
     if (this.config.useBundler) {
-      child = cp.exec(`${this.config.command} ${args.join(' ')}`, options, cb);
+      child = cp.exec(cmd, options, cb);
     } else {
       child = cp.execFile(this.config.command, args, options, cb);
     }
+    log("executeRubocop: done");
+
     child.stdin.write(fileContents);
     child.stdin.end();
     return child;
@@ -205,6 +211,8 @@ ${copName}:
       const json = output.replace(/^RuboCop server starting on.*?\n/, '');
       rubocop = JSON.parse(json);
     } catch (e) {
+      log("JSON.parse failed");
+
       if (e instanceof SyntaxError) {
         const message = output.replace(/\n/g, "\\n").replace(/\r/g, "\\r").replace(/\t/g, "\\t");
         const errorMessage = `Error on parsing output (It might non-JSON output) : "${message}"`;

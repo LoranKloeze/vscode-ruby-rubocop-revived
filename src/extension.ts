@@ -1,10 +1,13 @@
 import * as vscode from 'vscode';
 import { Rubocop } from './rubocop';
 import { onDidChangeConfiguration } from './configuration';
+import { channel, log } from './channel';
 
 // entry point of extension
 export function activate(context: vscode.ExtensionContext): void {
   'use strict';
+
+  log("activate");
 
   const diag = vscode.languages.createDiagnosticCollection('ruby');
   context.subscriptions.push(diag);
@@ -76,7 +79,7 @@ export function activate(context: vscode.ExtensionContext): void {
   const disableCopDisposable = vscode.commands.registerCommand(
     'ruby.rubocop.disableCop',
     (workspaceFolder?: vscode.WorkspaceFolder, copName?: string) => {
-      if(workspaceFolder === null || copName === null) return;
+      if (workspaceFolder === null || copName === null) return;
 
       rubocop.disableCop(
         workspaceFolder,
@@ -87,4 +90,16 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   context.subscriptions.push(disableCopDisposable);
+
+  //
+  // command for showing our output channel
+  //
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      'ruby.rubocop.showOutputChannel',
+      () => channel?.show()
+    ));
+
+  log("activated");
 }

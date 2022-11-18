@@ -3,10 +3,10 @@ import * as cp from 'child_process';
 
 import { getConfig } from './configuration';
 import { getCommandArguments, getCurrentPath } from './helper';
+import { log } from './channel';
 
 export default class RubocopAutocorrectProvider
-  implements vscode.DocumentFormattingEditProvider
-{
+  implements vscode.DocumentFormattingEditProvider {
   public provideDocumentFormattingEdits(document: vscode.TextDocument): vscode.TextEdit[] {
     return this.getAutocorrectEdits(document);
   }
@@ -15,7 +15,7 @@ export default class RubocopAutocorrectProvider
     const config = getConfig();
     try {
       const args = [...getCommandArguments(document.fileName), ...additionalArguments];
-      if(additionalArguments.length === 0) args.push('--autocorrect');
+      if (additionalArguments.length === 0) args.push('--autocorrect');
 
       if (config.useServer) {
         args.push('--server');
@@ -25,9 +25,13 @@ export default class RubocopAutocorrectProvider
         cwd: getCurrentPath(document.uri),
         input: document.getText(),
       };
+
+      const cmd = `${config.command} ${args.join(' ')}`;
+      log(`autocorrect: ${cmd}`);
+
       let stdout;
       if (config.useBundler) {
-        stdout = cp.execSync(`${config.command} ${args.join(' ')}`, options);
+        stdout = cp.execSync(cmd, options);
       } else {
         stdout = cp.execFileSync(config.command, args, options);
       }
@@ -36,6 +40,7 @@ export default class RubocopAutocorrectProvider
     } catch (e) {
       // if there are still some offences not fixed RuboCop will return status 1
       if (e.status !== 1) {
+        log(`autocorrect: error ${e}`);
         vscode.window.showWarningMessage(
           'An error occurred during auto-correction'
         );
@@ -56,6 +61,8 @@ export default class RubocopAutocorrectProvider
   //
   // So we need to parse out the actual auto-corrected ruby
   private onSuccess(document: vscode.TextDocument, stdout: Buffer) {
+    log("autocorrect: done");
+
     const stringOut = stdout.toString();
     const autoCorrection = stringOut.match(
       /^.*\n====================(?:\n|\r\n)([.\s\S]*)/m

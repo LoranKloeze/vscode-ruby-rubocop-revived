@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { log } from './channel';
 
 export interface TaskToken {
   readonly isCanceled: boolean;
@@ -116,6 +117,7 @@ export class TaskQueue {
       try {
         await task.run();
       } catch (e) {
+        log(`error: ${e.message}`);
         console.error('Error while running rubocop: ', e.message, e.stack);
       }
       this.tasks.shift();
