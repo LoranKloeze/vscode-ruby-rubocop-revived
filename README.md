@@ -96,7 +96,7 @@ Specify configuration (via navigating to `File > Preferences > Workspace Setting
 You can change the keybinding (via editing `keybindings.json`)
 
 ```javascript
-{ "key": "ctrl+alt+l",          "command": "ruby.rubocopAutocorrect",
+{ "key": "ctrl+alt+l",          "command": "ruby.rubocop.autocorrect",
                                 "when": "editorLangId == 'ruby'" }
 ```
 
